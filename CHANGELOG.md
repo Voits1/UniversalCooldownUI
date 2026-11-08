@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 — metadata fix
+
+- Thunderstore manifest: correct `website_url` (repository link).
+- No code changes; the 1.0.0 files are identical.
 ## 1.0.0 — first public release
 
 Everything below was built from scratch during one long debugging session against a live

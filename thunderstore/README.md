@@ -1,6 +1,7 @@
-# Universal Cooldown UI
+# Universal Cooldown UI — a Bloodcraft fix for V Rising 1.1.x
 
-Client side companion for **Bloodcraft** on **V Rising 1.1.x**.
+Client side of a **fix for Bloodcraft 1.13.26** on **V Rising 1.1.15** (the version Bloodcraft
+was not built for). It repairs and surfaces cooldown recovery and stat bonuses.
 
 Bloodcraft 1.13.26 was built for 1.1.12. In 1.1.15 the game recalculates ability cooldowns
 from the ability bar, so cooldown recovery does nothing and tooltips keep showing vanilla

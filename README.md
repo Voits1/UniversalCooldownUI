@@ -1,14 +1,19 @@
-# Universal Cooldown UI
+# Universal Cooldown UI — a **Bloodcraft fix** for V Rising 1.1.x
 
-Client UI + server patch for **Bloodcraft** on **V Rising 1.1.x**.
+**This is a fix for Bloodcraft, not a standalone gameplay mod.** It repairs the cooldown and
+stat integration that broke when V Rising moved from 1.1.12 to 1.1.15, and adds the missing
+UI for it.
 
-It makes Bloodcraft cooldown and stat bonuses *actually work* and *actually visible*: ability
-tooltips, weapon tooltips and a new **Blood** tab in the vanilla character window.
+| | |
+|---|---|
+| **Fixes** | Bloodcraft **1.13.26** (built for V Rising 1.1.12) |
+| **Game versions** | **V Rising 1.1.x** — developed and verified on **1.1.15**; should work on other 1.1 builds but is untested there |
+| **Requires** | BepInExPack V Rising (IL2CPP). The server part needs the Bloodcraft source tree |
 
-> Bloodcraft 1.13.26 was built for V Rising 1.1.12. In 1.1.15 the game recalculates ability
-> cooldowns from `AbilityBar_Shared` / vampire attributes and silently overwrites whatever a
-> mod writes there, so cooldown recovery (CDR) did nothing and tooltips kept showing vanilla
-> numbers. This project fixes both sides.
+> **What was broken:** in 1.1.12 Bloodcraft wrote cooldown recovery into the ability bar. In
+> 1.1.15 the game recalculates ability cooldowns from `AbilityBar_Shared` / vampire attributes
+> and silently overwrites mod values, so cooldown recovery (CDR) did nothing and tooltips kept
+> showing vanilla numbers. This project fixes both the server calculation and the client UI.
 
 ---
 
@@ -57,10 +62,15 @@ thunderstore/                 ready-to-upload Thunderstore package files
 
 ## Requirements
 
-- V Rising **1.1.x** (tested on 1.1.15)
-- **BepInExPack V Rising** (IL2CPP, 6.0.0-be.XXX or newer)
-- **Bloodcraft 1.13.26** on the server (the patch is written against that source tree)
-- .NET SDK 8 to build Bloodcraft, .NET SDK 6 to build the client plugin
+| Component | Version |
+|---|---|
+| V Rising (client + dedicated server) | **1.1.15** — tested; other 1.1.x builds are expected to work |
+| Bloodcraft | **1.13.26** — the source the patch is written against |
+| BepInExPack V Rising | IL2CPP, 6.0.0-be.XXX or newer |
+| .NET SDK | 8 for Bloodcraft, 6 for the client plugin |
+
+The client mod alone does not depend on Bloodcraft being installed on your machine: it only
+reads text files. The server part does — it lives inside Bloodcraft.
 
 ---
 

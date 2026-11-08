@@ -62,6 +62,9 @@ thunderstore/                 ready-to-upload Thunderstore package files
 
 ## Requirements
 
+Repository: <https://github.com/Voits1/UniversalCooldownUI>
+
+
 | Component | Version |
 |---|---|
 | V Rising (client + dedicated server) | **1.1.15** — tested; other 1.1.x builds are expected to work |

@@ -63,6 +63,7 @@ thunderstore/                 ready-to-upload Thunderstore package files
 ## Requirements
 
 Repository: <https://github.com/Voits1/UniversalCooldownUI>
+Thunderstore: <https://thunderstore.io/c/v-rising/p/Voits1/UniversalCooldownUI/>
 
 
 | Component | Version |
@@ -163,6 +164,18 @@ Server: copy the files into the Bloodcraft tree, apply the hooks, then
 ```powershell
 dotnet build Bloodcraft.csproj -c Release
 ```
+
+## Publishing (Thunderstore)
+
+The listing is linked to this repository in two ways:
+
+- the Thunderstore package metadata (`website_url`) points here;
+- `.github/workflows/publish.yml` uploads a packaged release to Thunderstore automatically.
+
+To enable the automatic upload, add the repository secret `THUNDERSTORE_TOKEN` (a Thunderstore
+service-account token of the team) and publish a GitHub release with the package zip attached
+(build it with `build-package.ps1`). The workflow then pushes the version to the `v-rising`
+community.
 
 ## License
 

@@ -1,0 +1,95 @@
+name: Publish to Thunderstore
+
+# Uploads the packaged mod to Thunderstore when a GitHub release is published.
+#
+# Setup (once):
+#   1. Thunderstore -> Settings -> Teams -> <your team> -> Service accounts -> Create
+#   2. GitHub repo -> Settings -> Secrets and variables -> Actions -> New repository secret
+#      Name: THUNDERSTORE_TOKEN   Value: tss_...
+#   3. Bump thunderstore/manifest.json version, build the package, attach the zip to a
+#      GitHub release (tag like v1.0.1). This workflow uploads that zip.
+#
+# The zip must contain manifest.json, README.md, icon.png and plugins/UniversalCooldownUI.dll.
+# Build it locally with:
+#   pwsh ./build-package.ps1 -BepInExRoot "<path to BepInEx>"
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (for example v1.0.1)"
+        required: true
+
+env:
+  TEAM: Voits1
+  COMMUNITY: v-rising
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download the package from the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh release download "$TAG" --pattern "*.zip" --dir dist --repo "${{ github.repository }}"
+          ls -l dist
+
+      - name: Upload to Thunderstore
+        env:
+          TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
+          TEAM: ${{ env.TEAM }}
+          COMMUNITY: ${{ env.COMMUNITY }}
+        run: |
+          set -euo pipefail
+          FILE=$(ls dist/*.zip | head -n 1)
+          NAME=$(basename "$FILE")
+          SIZE=$(stat -c%s "$FILE")
+          API="https://thunderstore.io/api/experimental"
+
+          echo "Package: $NAME ($SIZE bytes)"
+
+          INIT=$(curl -sS -X POST "$API/usermedia/initiate-upload/" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"filename\":\"$NAME\",\"file_size_bytes\":$SIZE}")
+
+          UUID=$(echo "$INIT" | jq -r '.user_media.uuid')
+          PARTS=$(echo "$INIT" | jq -r '.upload_urls | length')
+          echo "upload uuid: $UUID, parts: $PARTS"
+
+          if [ "$PARTS" != "1" ]; then
+            echo "This workflow expects a single-part upload (file below the part size)." >&2
+            exit 1
+          fi
+
+          URL=$(echo "$INIT" | jq -r '.upload_urls[0].url')
+          MD5=$(openssl dgst -md5 -binary "$FILE" | openssl base64 -A)
+
+          ETAG=$(curl -sS -D - -o /dev/null -X PUT "$URL" \
+            -H "Content-MD5: $MD5" \
+            -H "Content-Length: $SIZE" \
+            --data-binary "@$FILE" \
+            | tr -d '\r' | awk 'tolower($1)=="etag:" {print $2}' | tr -d '"')
+
+          echo "etag: $ETAG"
+
+          curl -sS -X POST "$API/usermedia/$UUID/finish-upload/" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"parts\":[{\"ETag\":\"$ETAG\",\"PartNumber\":1}]}"
+
+          RESULT=$(curl -sS -X POST "$API/submission/submit/" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"author_name\":\"$TEAM\",\"communities\":[\"$COMMUNITY\"],\"has_nsfw_content\":false,\"upload_uuid\":\"$UUID\",\"community_categories\":{}}")
+
+          echo "$RESULT" | jq -r '.package_version.full_name, .available_communities[0].url'

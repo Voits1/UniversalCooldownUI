@@ -63,6 +63,7 @@ thunderstore/                 готовые файлы пакета Thunderstor
 ## Требования
 
 Репозиторий: <https://github.com/Voits1/UniversalCooldownUI>
+Thunderstore: <https://thunderstore.io/c/v-rising/p/Voits1/UniversalCooldownUI/>
 
 
 | Компонент | Версия |
@@ -162,6 +163,17 @@ dotnet build client/UniversalCooldownUI/UniversalCooldownUI.csproj -c Release `
 ```powershell
 dotnet build Bloodcraft.csproj -c Release
 ```
+
+## Публикация (Thunderstore)
+
+Страница мода связана с этим репозиторием в двух местах:
+
+- в метаданных пакета (`website_url`) указан этот репозиторий;
+- `.github/workflows/publish.yml` автоматически загружает собранный релиз в Thunderstore.
+
+Чтобы включить автозагрузку, добавьте секрет репозитория `THUNDERSTORE_TOKEN` (сервисный
+токен команды Thunderstore) и опубликуйте GitHub-релиз с приложенным zip-архивом (собирается
+`build-package.ps1`). Workflow отправит версию в сообщество `v-rising`.
 
 ## Лицензия
 

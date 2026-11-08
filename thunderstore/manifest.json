@@ -1,0 +1,7 @@
+{
+  "name": "UniversalCooldownUI",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/",
+  "description": "Makes Bloodcraft cooldown and stat bonuses visible: ability and weapon tooltips, plus a native 'Blood' tab in the character window. English and Russian.",
+  "dependencies": ["BepInEx-BepInExPack_V_Rising-1.733.2"]
+}

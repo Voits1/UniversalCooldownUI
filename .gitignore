@@ -1,0 +1,23 @@
+# build output
+bin/
+obj/
+*.user
+.vs/
+
+# IDE
+.idea/
+*.suo
+
+# packaged artifacts
+dist/
+*.zip
+!thunderstore/*.zip
+
+# local notes (never publish)
+*.local.md
+NOTES*.md
+
+# binaries (built by build-package.ps1)
+*.dll
+*.pdb
+

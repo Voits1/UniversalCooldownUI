@@ -58,7 +58,11 @@ internal static class CooldownRateService
                     if (rate < 0f) rate = 0f;
 
                     AbilityCooldownData data = EntityManager.GetComponentData<AbilityCooldownData>(ability);
-                    float target = vanilla * (1f - rate);
+
+                    // The stat is a *recovery rate* (as in vanilla Bloodcraft): recovery of
+                    // 100% means cooldowns twice as fast, not zero. Using (1 - rate) made
+                    // cooldowns collapse to near zero on high values.
+                    float target = vanilla / (1f + rate);
 
                     if (Math.Abs(data.Cooldown._Value - target) < 0.001f) continue;
 
@@ -74,7 +78,10 @@ internal static class CooldownRateService
 
             if (changed > 0)
             {
-                Core.Log.LogInfo($"[CooldownRate] base cooldowns updated: {changed} abilities, spell={spell:P0} weapon={weapon:P0} ultimate={ultimate:P0}");
+                Core.Log.LogInfo($"[CooldownRate] base cooldowns updated: {changed} abilities, " +
+                                 $"spell={spell:P0} (x{1f / (1f + Math.Max(0f, spell)):0.00}), " +
+                                 $"weapon={weapon:P0} (x{1f / (1f + Math.Max(0f, weapon)):0.00}), " +
+                                 $"ultimate={ultimate:P0} (x{1f / (1f + Math.Max(0f, ultimate)):0.00})");
             }
         }
         catch (Exception e)

@@ -19,7 +19,7 @@ namespace UniversalCooldownUI
     {
         public const string PluginGuid = "universalcooldown.ui";
         public const string PluginName = "Universal Cooldown UI";
-        public const string PluginVersion = "1.0.1";
+        public const string PluginVersion = "1.0.2";
 
         internal static ManualLogSource L;
 
@@ -197,8 +197,8 @@ namespace UniversalCooldownUI
                     if (!float.TryParse(match.Groups["num"].Value.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out float number))
                         return match.Value;
 
-                    float reduced = number * (1f - rate);
-                    if (reduced < 0f) reduced = 0f;
+                    // recovery rate, not linear reduction: 100% rate = twice as fast
+                    float reduced = number / (1f + rate);
 
                     string formatted = reduced >= 10f ? reduced.ToString("0.#") : reduced.ToString("0.##");
                     return formatted + match.Groups["tail"].Value;

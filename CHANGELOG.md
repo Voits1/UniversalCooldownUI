@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2 — balance fix
+
+- Cooldown recovery is now applied as a **recovery rate**: `cooldown = base / (1 + rate)`.
+  The previous `base * (1 - rate)` collapsed cooldowns to zero on high values (100% rate gave
+  0 s instead of half). Same formula on the server and in the tooltip.
+- Documented that the stat caps come from Bloodcraft's own config and should stay at the
+  Bloodcraft defaults (`0.1` spell / `0.1` weapon / `0.2` ultimate). Raising them to `1`
+  multiplied every bonus by ten and broke the balance.
+- No changes to the tab layout.
 ## 1.0.1 — metadata fix
 
 - Thunderstore manifest: correct `website_url` (repository link).

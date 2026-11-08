@@ -23,7 +23,7 @@ UI for it.
 
 | File | Purpose |
 |---|---|
-| `Systems/CooldownRateService.cs` | Applies the real cooldown reduction to every ability entity of the player (`AbilityCooldownData.Cooldown = vanilla * (1 - rate)`). Idempotent: values are always derived from the prefab, so nothing stacks when the player swaps weapons. Also writes the client sync file. |
+| `Systems/CooldownRateService.cs` | Applies the real cooldown recovery to every ability entity of the player: `AbilityCooldownData.Cooldown = vanilla / (1 + rate)` — the stat is a *recovery rate*, so 100% means twice as fast, not zero. Idempotent: values are always derived from the prefab, so nothing stacks when the player swaps weapons. Also writes the client sync file. |
 | `Systems/BuffsTabService.cs` | Collects what Bloodcraft gives this player — permanent buffs, class synergies, blood legacy stats, weapon expertise — and writes it for the client, one file per player. |
 | `Systems/StatsDiagnostics.cs` | Optional (`Enabled = false`) one-line stat dump for tuning a server. |
 
@@ -72,6 +72,11 @@ Thunderstore: <https://thunderstore.io/c/v-rising/p/Voits1/UniversalCooldownUI/>
 | Bloodcraft | **1.13.26** — the source the patch is written against |
 | BepInExPack V Rising | IL2CPP, 6.0.0-be.XXX or newer |
 | .NET SDK | 8 for Bloodcraft, 6 for the client plugin |
+
+The stat caps themselves are **not** part of this project — they come from `io.zfolmt.Bloodcraft.cfg`
+(`SpellCooldownRecoveryRate`, `WeaponCooldownRecoveryRate`, `UltimateCooldownRecoveryRate`, …).
+Keep them at the Bloodcraft defaults (`0.1`, `0.1`, `0.2`); raising them multiplies every bonus
+and destroys the balance.
 
 The client mod alone does not depend on Bloodcraft being installed on your machine: it only
 reads text files. The server part does — it lives inside Bloodcraft.

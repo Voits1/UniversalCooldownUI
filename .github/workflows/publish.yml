@@ -43,7 +43,17 @@ jobs:
           gh release download "$TAG" --pattern "*.zip" --dir dist --repo "${{ github.repository }}"
           ls -l dist
 
+      - name: Check for the Thunderstore token
+        env:
+          TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
+        run: |
+          if [ -z "${TOKEN:-}" ]; then
+            echo "::notice title=Thunderstore token missing::Add the repository secret THUNDERSTORE_TOKEN to enable automatic uploads. Skipping."
+            echo "nothing to upload"
+          fi
+
       - name: Upload to Thunderstore
+        if: ${{ secrets.THUNDERSTORE_TOKEN != '' }}
         env:
           TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
           TEAM: ${{ env.TEAM }}

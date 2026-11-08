@@ -1,7 +1,7 @@
 {
   "name": "UniversalCooldownUI",
   "version_number": "1.0.0",
-  "website_url": "https://github.com/",
+  "website_url": "https://github.com/Voits1/UniversalCooldownUI",
   "description": "Bloodcraft fix for V Rising 1.1.15: real cooldown recovery in tooltips, weapon bonuses and a native 'Blood' tab in the character window. EN/RU. Server part required.",
   "dependencies": ["BepInEx-BepInExPack_V_Rising-1.733.2"]
 }

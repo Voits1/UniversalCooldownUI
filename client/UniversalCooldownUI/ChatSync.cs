@@ -60,6 +60,20 @@ namespace UniversalCooldownUI
             }
         }
 
+        /// <summary>Reconnect: local entities and the world handle are no longer valid.</summary>
+        internal static void ResetSession()
+        {
+            _resolved = false;
+            _localUser = Entity.Null;
+            _localCharacter = Entity.Null;
+            _world = null;
+            _nextAuto = 0f;
+            _nextRequest = 0f;
+            Parts.Clear();
+            _expected = 0;
+            _received = 0;
+        }
+
         internal static void SetWorld(World world)
         {
             if (_world == null && world != null) _world = world;

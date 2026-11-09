@@ -75,6 +75,21 @@ namespace UniversalCooldownUI
             if (menu != null) _menu = menu;
         }
 
+        /// <summary>New character window (reconnect): drop every cached reference and rebuild.</summary>
+        internal static void Rebind(InventorySubMenu menu)
+        {
+            ResetState();
+            _remoteSections.Clear();
+            _lastSections.Clear();
+            _signature = string.Empty;
+            _fileStamp = DateTime.MinValue;
+            _lastDataTime = -999f;
+            _warmStage = 0;
+            _warmRetryAt = 0;
+
+            _menu = menu;
+        }
+
         // ---------- per frame ----------
 
         internal static void Tick(Unity.Entities.World world)
@@ -187,6 +202,7 @@ namespace UniversalCooldownUI
             _active = false;
             _nativeTab = false;
             _tabIndex = -1;
+            _built = false;
             _root = null;
             _content = null;
             _button = null;
@@ -326,6 +342,7 @@ namespace UniversalCooldownUI
             {
                 _nativeTab = false;
                 _tabIndex = -1;
+            _built = false;
                 Plugin.L.LogWarning("[BuffsTab] native registration failed, falling back to overlay: " + e.Message);
             }
         }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3 — the tab survives a reconnect
+
+- Reconnecting to the server destroyed the character window, and the mod kept using the old
+  (destroyed) references — the Blood tab silently disappeared until the game was restarted.
+  Now a new character window rebinds everything: tab, cached rows and the chat session.
+- Chat session state (local user/character entities) resets on reconnect, so data resumes.
 ## 1.1.2 — updates without waiting
 
 - The client polls the server every 20 seconds (and every ~8 seconds while the tab is open),

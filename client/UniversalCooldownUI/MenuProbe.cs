@@ -63,13 +63,30 @@ namespace UniversalCooldownUI
 
         static void OnInitializeUI(InventorySubMenu menu)
         {
+            bool changed = Menu != menu;
+
             if (Menu == null)
             {
-                Menu = menu;
                 Plugin.L.LogInfo($"[Probe] character window found: '{menu.gameObject.name}'");
             }
+            else if (changed)
+            {
+                // reconnect (or a world reload): the old menu and its clones are gone,
+                // everything has to be rebuilt against the new one
+                Plugin.L.LogInfo("[Probe] character window re-created - rebinding");
+            }
 
-            BuffsTab.Bind(menu);
+            Menu = menu;
+
+            if (changed)
+            {
+                ChatSync.ResetSession();
+                BuffsTab.Rebind(menu);
+            }
+            else
+            {
+                BuffsTab.Bind(menu);
+            }
         }
 
         static void OnCanvasUpdate(UICanvasSystem __instance)

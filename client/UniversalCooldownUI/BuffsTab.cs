@@ -46,6 +46,8 @@ namespace UniversalCooldownUI
         static readonly List<SimpleStunButton> VanillaButtons = new();
         static readonly List<(TMP_Text Text, string Value)> Enforced = new();
         static List<Section> _lastSections = new();
+        static List<Section> _remoteSections = new();
+        static float _lastDataTime = -999f;
 
         static bool _built;
         static bool _active;
@@ -81,6 +83,9 @@ namespace UniversalCooldownUI
             {
                 if (_menu == null) return;
                 if (!Plugin.BloodTab.Value) return;
+
+                ChatSync.SetWorld(world);
+                ChatSync.AutoPoll();
                 if (_localId == 0 && world != null) TryResolveLocalId(world);
 
                 int frame = Time.frameCount;
@@ -128,6 +133,7 @@ namespace UniversalCooldownUI
                 _active = true;
                 Rebuild(ReadServerSections());
                 _layoutFrames = 3;
+                if (Time.time - _lastDataTime > 20f) ChatSync.Request();
                 LogLayout();
                 Plugin.L.LogInfo($"[BuffsTab] opened by the game (tab={_tabIndex})");
             }
@@ -158,6 +164,8 @@ namespace UniversalCooldownUI
                 // rows could not be built yet (templates were not ready) - retry
                 Rebuild(ReadServerSections());
             }
+
+            if (_remoteSections.Count == 0) ChatSync.Request();
         }
 
         static void EnforceTexts()
@@ -714,18 +722,55 @@ namespace UniversalCooldownUI
             }
         }
 
+        /// <summary>Data received from the server over chat.</summary>
+        internal static void OnRemotePayload(string payload)
+        {
+            try
+            {
+                List<Section> sections = ParseSections(payload);
+                if (sections.Count == 0) return;
+
+                _remoteSections = sections;
+                _lastSections = sections;
+                _lastDataTime = Time.time;
+
+                if (_active) Rebuild(sections);
+
+                Plugin.L.LogInfo($"[BuffsTab] data received over chat ({sections.Count} sections)");
+            }
+            catch (Exception e)
+            {
+                Plugin.L.LogWarning("[BuffsTab] remote data: " + e.Message);
+            }
+        }
+
         static List<Section> ReadServerSections()
+        {
+            List<Section> fromFile = new();
+
+            try
+            {
+                string path = DataFileFor(_localId);
+                if (File.Exists(path)) fromFile = ParseSections(File.ReadAllText(path, Encoding.UTF8));
+            }
+            catch (Exception e)
+            {
+                Plugin.L.LogWarning("[BuffsTab] read: " + e.Message);
+            }
+
+            if (fromFile.Count > 0) return fromFile;
+            return _remoteSections;
+        }
+
+        static List<Section> ParseSections(string text)
         {
             List<Section> result = new();
 
             try
             {
-                string path = DataFileFor(_localId);
-                if (!File.Exists(path)) return result;
-
                 Section current = null;
 
-                foreach (string raw in File.ReadAllLines(path, Encoding.UTF8))
+                foreach (string raw in (text ?? string.Empty).Split('\n'))
                 {
                     string line = raw.TrimEnd();
                     if (line.Length == 0) continue;
@@ -737,6 +782,13 @@ namespace UniversalCooldownUI
                     if (parts[0] == "S")
                     {
                         current = new Section();
+
+                        if (parts.Length >= 2 && parts[1] == "meta")
+                        {
+                            // service section: parsed, never displayed
+                            current = null;
+                            continue;
+                        }
 
                         if (parts.Length >= 3)
                         {
@@ -752,14 +804,22 @@ namespace UniversalCooldownUI
                         continue;
                     }
 
-                    if (parts[0] != "R" || current == null) continue;
+                    if (parts[0] != "R") continue;
+
+                    if (parts.Length >= 2 && parts[1] == "rates")
+                    {
+                        ApplyRates(parts);
+                        continue;
+                    }
+
+                    if (current == null) continue;
 
                     AddRow(current, parts);
                 }
             }
             catch (Exception e)
             {
-                Plugin.L.LogWarning("[BuffsTab] read: " + e.Message);
+                Plugin.L.LogWarning("[BuffsTab] parse: " + e.Message);
             }
 
             for (int i = 0; i < result.Count; i++)
@@ -771,11 +831,21 @@ namespace UniversalCooldownUI
             return result;
         }
 
+        static void ApplyRates(string[] parts)
+        {
+            if (parts.Length < 5) return;
+
+            if (float.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float value)) Plugin.ServerSpell = value;
+            if (float.TryParse(parts[3], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out value)) Plugin.ServerWeapon = value;
+            if (float.TryParse(parts[4], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out value)) Plugin.ServerUltimate = value;
+        }
+
         static void AddRow(Section section, string[] parts)
         {
             if (parts.Length < 2) return;
 
             string kind = parts[1];
+
 
             if (kind == "shroud" && parts.Length == 2)
             {
@@ -864,13 +934,14 @@ namespace UniversalCooldownUI
 
             if (sections.Count == 0)
             {
+                // one full width line: header-less section, value empty
                 sections = new List<Section>
                 {
                     new()
                     {
                         Kind = "",
-                        Title = Localization.TabTitle,
-                        Rows = { new KeyValuePair<string, string>(Localization.Loading, Localization.LoadingHint) }
+                        Title = "",
+                        Rows = { new KeyValuePair<string, string>(Localization.Loading, "") }
                     }
                 };
             }
@@ -883,13 +954,46 @@ namespace UniversalCooldownUI
 
         static void AddSection(Section section)
         {
-            GameObject sectionGo = BuildSection(section.Title, out Transform container);
+            bool singleLine = section.Rows.Count == 1 && string.IsNullOrEmpty(section.Rows[0].Value);
+
+            GameObject sectionGo = BuildSection(section.Title, out Transform container, singleLine);
             if (sectionGo == null) return;
+
+            if (singleLine)
+            {
+                AddPlainText(sectionGo.transform, section.Rows[0].Key);
+                return;
+            }
 
             foreach (var row in section.Rows) AddRowView(container, row.Key, row.Value);
         }
 
-        static GameObject BuildSection(string title, out Transform container)
+        /// <summary>One centered line of text, used for the "loading" state.</summary>
+        static void AddPlainText(Transform parent, string text)
+        {
+            try
+            {
+                GameObject go = new("BuffsPlainText");
+                go.transform.SetParent(parent, false);
+                go.AddComponent<RectTransform>();
+
+                var tmp = go.AddComponent<TextMeshProUGUI>();
+                tmp.text = text;
+                tmp.fontSize = 18f;
+                tmp.color = TextColor;
+                tmp.alignment = TextAlignmentOptions.Left;
+                tmp.enableWordWrapping = true;
+                tmp.overflowMode = TextOverflowModes.Overflow;
+
+                Enforced.Add((tmp, text));
+            }
+            catch (Exception e)
+            {
+                Plugin.L.LogWarning("[BuffsTab] plain text: " + e.Message);
+            }
+        }
+
+        static GameObject BuildSection(string title, out Transform container, bool withoutGrid = false)
         {
             container = null;
 
@@ -910,7 +1014,7 @@ namespace UniversalCooldownUI
             vlg.childForceExpandWidth = true;
             vlg.childForceExpandHeight = false;
 
-            if (_headerTemplate != null)
+            if (_headerTemplate != null && !string.IsNullOrEmpty(title))
             {
                 GameObject header = UnityEngine.Object.Instantiate(_headerTemplate, section.transform);
                 header.SetActive(true);
@@ -935,6 +1039,8 @@ namespace UniversalCooldownUI
                 divider.SetActive(true);
                 divider.name = "BuffsDivider";
             }
+
+            if (withoutGrid) return section;
 
             GameObject gridGo = new("BuffsGrid");
             gridGo.transform.SetParent(section.transform, false);

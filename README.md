@@ -128,6 +128,17 @@ If the server runs on another machine, point `Sync/RatesFile` at a synced copy o
 
 ## How the pieces talk
 
+The server **cannot** hand files to a remote client, so there are two channels:
+
+- **Chat** (works for everyone): the client sends `.ucui d`, the server answers with machine
+  readable lines, the client swallows them before the chat is drawn. This is the normal path
+  for players on other machines, and it also carries the cooldown rates for the tooltips.
+- **Files** (same machine or a synced folder): the same data is written to
+  `BepInEx/config/universalcooldown_rates.txt` and `universalcooldown_buffs_<steamId>.txt`,
+  which the client prefers when it can read them.
+
+## How the pieces talk (details)
+
 The server and the client never share memory — they share text files. See
 [`docs/PROTOCOL.md`](docs/PROTOCOL.md) for the exact formats. The client sends the server
 locale-neutral keys (enum names + numbers) and renders English or Russian itself.

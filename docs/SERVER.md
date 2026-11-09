@@ -85,6 +85,12 @@ static void ApplyCooldownRecoveryRates(Entity buffEntity, Entity playerCharacter
 }
 ```
 
+## 2b. The chat command
+
+Copy `server/Bloodcraft/Commands/UniversalCooldownCommands.cs` into `<Bloodcraft>/Commands/`.
+It adds `.ucui d` (group `ucui`, shorthand `uc`), which answers the client mod with the same
+data as the files. Without it the tab only works on the machine that runs the server.
+
 ## 3. Refresh the tab data periodically
 
 File: `<Bloodcraft>/Patches/StatChangeSystemPatch.cs`

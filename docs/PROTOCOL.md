@@ -118,3 +118,38 @@ Decided by the client (`Localization.IsPercent`):
   reduction, resistances, resource yield, blood drain reduction, all cooldown rates,
   minion damage, ability attack speed, corruption resistance;
 - flat: `MaxHealth`, `MovementSpeed` (shown with one decimal), `PhysicalPower`, `SpellPower`.
+---
+
+## 3. Chat channel (for players on other machines)
+
+Files work only when the client and the server share a machine (or a synced folder).
+Every other player gets the data over the game chat:
+
+1. The client sends the in-game command `.ucui d` (as if the player typed it).
+2. The server answers with machine readable lines:
+
+   ```
+   UCUI|<part>|<total>|<payload>
+   ```
+
+   `payload` is the same text that is written to the file, with every `\n` replaced by `~`
+   and split into 200 character chunks.
+3. The client collects the parts, restores the newlines, parses it exactly like the file and
+   **destroys those chat entities before the chat is drawn** — players never see the payload.
+   The echo of the command itself is hidden the same way.
+
+The reply starts with the service section, which also carries the tooltip rates, so a client
+that never reads a file still knows the server percentages:
+
+```
+V|2
+S|meta
+R|rates|0.1|0.1|0.2
+S|general
+...
+```
+
+`R|rates|<spell>|<weapon>|<ultimate>` is consumed by the client and never displayed.
+
+The client asks again every 2 minutes while playing (rates for tooltips) and on opening the
+tab when the data is older than 20 seconds.

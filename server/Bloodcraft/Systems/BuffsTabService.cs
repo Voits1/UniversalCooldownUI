@@ -48,20 +48,43 @@ internal static class BuffsTabService
 
     static readonly Dictionary<ulong, string> LastWritten = new();
 
-    /// <summary>Called whenever the player's weapon buff is (re)applied.</summary>
-    public static void Write(Entity player, ulong steamId)
+    /// <summary>Builds the tab payload (same text that is written to the files).</summary>
+    public static string BuildText(Entity player, ulong steamId)
     {
         try
         {
             StringBuilder sb = new();
             sb.Append("V|2\n");
 
+            // service section: cooldown rates for the client tooltips (players on other
+            // machines cannot read the rates file, only chat reaches them)
+            sb.Append("S|meta\n");
+            sb.Append("R|rates|")
+              .Append(ConfigService.SpellCooldownRecoveryRate.ToString("0.####", Invariant)).Append('|')
+              .Append(ConfigService.WeaponCooldownRecoveryRate.ToString("0.####", Invariant)).Append('|')
+              .Append(ConfigService.UltimateCooldownRecoveryRate.ToString("0.####", Invariant)).Append('\n');
+
             AppendGeneral(sb, steamId);
             AppendClass(sb, steamId);
             AppendBlood(sb, player, steamId);
             AppendWeapon(sb, player, steamId);
 
-            string text = sb.ToString();
+            return sb.ToString();
+        }
+        catch (Exception e)
+        {
+            Core.Log.LogWarning("[BuffsTab] build: " + e.Message);
+            return string.Empty;
+        }
+    }
+
+    /// <summary>Called whenever the player's weapon buff is (re)applied.</summary>
+    public static void Write(Entity player, ulong steamId)
+    {
+        try
+        {
+            string text = BuildText(player, steamId);
+            if (string.IsNullOrEmpty(text)) return;
 
             if (LastWritten.TryGetValue(steamId, out string previous) && text == previous) return;
             bool first = !LastWritten.ContainsKey(steamId);

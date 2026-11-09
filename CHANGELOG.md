@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 — works for players on other machines
+
+- **Chat channel**: the client asks the server with `.ucui d` and receives the tab data in
+  machine readable chat lines it hides from the chat window. Remote players no longer sit on
+  "loading server data" forever — files alone only worked when the client shared the server's
+  disk.
+- **Cooldown rates over chat**: a `meta` section carries spell/weapon/ultimate rates, so
+  tooltips are correct on remote clients too (they used to fall back to local config values).
+- The client polls the rates every two minutes and refreshes the tab when it opens.
+- "Loading" state is a single full width line instead of a row that overlapped its hint.
+- New server file: `server/Bloodcraft/Commands/UniversalCooldownCommands.cs` (the command).
 ## 1.0.2 — balance fix
 
 - Cooldown recovery is now applied as a **recovery rate**: `cooldown = base / (1 + rate)`.

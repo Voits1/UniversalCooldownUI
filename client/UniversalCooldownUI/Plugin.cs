@@ -19,7 +19,7 @@ namespace UniversalCooldownUI
     {
         public const string PluginGuid = "universalcooldown.ui";
         public const string PluginName = "Universal Cooldown UI";
-        public const string PluginVersion = "1.0.2";
+        public const string PluginVersion = "1.1.0";
 
         internal static ManualLogSource L;
 
@@ -73,6 +73,7 @@ namespace UniversalCooldownUI
             }
 
             MenuProbe.Install(harmony);
+            ChatSync.Install(harmony);
 
             L.LogInfo($"UniversalCooldownUI loaded (lang={Localization.Current}), SetText patched: {patched}");
         }

@@ -40,3 +40,7 @@ the fallback rates from its config, and the tab shows a hint.
 
 Works next to Raphael and Eclipse; only the character window is touched. Server patch source
 and full documentation: GitHub repository.
+## Limitations
+
+- Needs the patched server side (see the GitHub repository); the client alone shows "loading".
+- Class passives do not exist in Bloodcraft 1.13.x — the class section lists synergy caps.

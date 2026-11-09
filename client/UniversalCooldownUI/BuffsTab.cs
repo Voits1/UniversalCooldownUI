@@ -70,6 +70,8 @@ namespace UniversalCooldownUI
         static int _warmPrevTab;
         static int _warmRetryAt;
 
+        internal static ulong LocalSteamId => _localId;
+
         internal static void Bind(InventorySubMenu menu)
         {
             if (menu != null) _menu = menu;
@@ -150,7 +152,7 @@ namespace UniversalCooldownUI
                 _active = true;
                 Rebuild(ReadServerSections());
                 _layoutFrames = 3;
-                if (Time.time - _lastDataTime > 20f) ChatSync.Request();
+                if (Time.time - _lastDataTime > 10f) ChatSync.Request();
                 LogLayout();
                 Plugin.L.LogInfo($"[BuffsTab] opened by the game (tab={_tabIndex})");
             }

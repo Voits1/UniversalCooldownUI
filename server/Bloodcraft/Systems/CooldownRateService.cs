@@ -33,7 +33,7 @@ internal static class CooldownRateService
     {
         try
         {
-            WriteSyncFile(spell, weapon, ultimate, physPower, spellPower, extraStats);
+            WriteSyncFile(player, spell, weapon, ultimate, physPower, spellPower, extraStats);
 
             EntityQuery query = EntityManager.CreateEntityQuery(ComponentType.ReadOnly<AbilityCooldownData>());
             NativeArray<Entity> entities = query.ToEntityArray(Allocator.Temp);
@@ -109,11 +109,10 @@ internal static class CooldownRateService
     /// <c>spell|weapon|ultimate|physPower|spellPower|extraStats</c>
     /// (extraStats = "StatType:value;..." in invariant culture).
     /// </summary>
-    static void WriteSyncFile(float spell, float weapon, float ultimate, float physPower, float spellPower, string extraStats)
+    static void WriteSyncFile(Entity player, float spell, float weapon, float ultimate, float physPower, float spellPower, string extraStats)
     {
         try
         {
-            string path = Path.Combine(Paths.ConfigPath, "universalcooldown_rates.txt");
             string text = string.Join("|",
                 spell.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 weapon.ToString(System.Globalization.CultureInfo.InvariantCulture),
@@ -122,6 +121,19 @@ internal static class CooldownRateService
                 spellPower.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 extraStats ?? string.Empty);
 
+            // per player: the generic file is written by whoever refreshed last, which made
+            // it useless with several players online (kept for older clients)
+            ulong steamId = 0;
+
+            try { steamId = player.GetSteamId(); } catch { }
+
+            if (steamId != 0)
+            {
+                string perPlayer = Path.Combine(Paths.ConfigPath, $"universalcooldown_rates_{steamId}.txt");
+                File.WriteAllText(perPlayer, text, new UTF8Encoding(false));
+            }
+
+            string path = Path.Combine(Paths.ConfigPath, "universalcooldown_rates.txt");
             File.WriteAllText(path, text, new UTF8Encoding(false));
         }
         catch (Exception e)

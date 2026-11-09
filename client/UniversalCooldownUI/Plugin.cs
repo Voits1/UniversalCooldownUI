@@ -19,7 +19,7 @@ namespace UniversalCooldownUI
     {
         public const string PluginGuid = "universalcooldown.ui";
         public const string PluginName = "Universal Cooldown UI";
-        public const string PluginVersion = "1.1.4";
+        public const string PluginVersion = "1.1.5";
 
         internal static ManualLogSource L;
 
@@ -29,6 +29,7 @@ namespace UniversalCooldownUI
         internal static ConfigEntry<bool> Probe;
         internal static ConfigEntry<float> SpellRate, WeaponRate, UltimateRate;
         internal static ConfigEntry<string> RatesFile;
+        internal static ConfigEntry<int> PollSeconds;
 
         public override void Load()
         {
@@ -37,6 +38,7 @@ namespace UniversalCooldownUI
             Enabled = Config.Bind("General", "Enabled", true, "Show Bloodcraft bonuses in tooltips and the character window.");
             Language = Config.Bind("General", "Language", "auto", "UI language: auto, en or ru.");
             BloodTab = Config.Bind("Tab", "BloodTab", true, "Add the 'Blood' tab to the character window.");
+            PollSeconds = Config.Bind("Sync", "PollSeconds", 20, "How often the client asks the server for fresh data over chat (seconds). 0 disables polling and relies on server pushes only.");
 
             SpellRate = Config.Bind("Rates", "Spell", 0.14f, "Spell cooldown rate fallback (used when the server file is missing).");
             WeaponRate = Config.Bind("Rates", "Weapon", 0.21f, "Weapon cooldown rate fallback.");
@@ -115,6 +117,24 @@ namespace UniversalCooldownUI
             try
             {
                 string path = RatesPath();
+
+                // the server writes a per player copy next to the generic one; prefer it so
+                // several players online do not overwrite each other
+                try
+                {
+                    ulong steamId = BuffsTab.LocalSteamId;
+                    if (steamId != 0)
+                    {
+                        string dir = Path.GetDirectoryName(path);
+                        if (!string.IsNullOrEmpty(dir))
+                        {
+                            string perPlayer = Path.Combine(dir, $"universalcooldown_rates_{steamId}.txt");
+                            if (File.Exists(perPlayer)) path = perPlayer;
+                        }
+                    }
+                }
+                catch { }
+
                 if (!File.Exists(path)) return;
 
                 string[] parts = File.ReadAllText(path).Trim().Split('|');

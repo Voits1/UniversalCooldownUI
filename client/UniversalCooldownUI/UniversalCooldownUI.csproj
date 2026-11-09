@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>UniversalCooldownUI</AssemblyName>
-    <Version>1.1.4</Version>
+    <Version>1.1.5</Version>
     <Description>Bloodcraft fix for V Rising 1.1.15: cooldown recovery in tooltips, weapon bonuses and a native Blood tab in the character window.</Description>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>

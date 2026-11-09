@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.5 — smaller quality of life pass
+
+- `Sync/PollSeconds` (default 20) controls the fallback polling interval; `0` relies on server
+  pushes only.
+- Class section is titled with `(synergies)` so the `×1.5` values are not mistaken for passives.
+- The server writes the rates to a per player file (`universalcooldown_rates_<steamId>.txt`) and
+  the client prefers it; the shared file stays for compatibility.
+- README: known limitations section (EN/RU and on Thunderstore).
 ## 1.1.4 — no duplicate tabs, readable movement speed
 
 - Fixed duplicated "Blood" tabs: the game reports the same character window through a new

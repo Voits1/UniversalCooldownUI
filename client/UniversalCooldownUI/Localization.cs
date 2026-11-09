@@ -60,7 +60,7 @@ namespace UniversalCooldownUI
                 case "general":
                     return Ru ? "Общие" : "General";
                 case "class":
-                    return string.Format(Ru ? "Класс: {0}" : "Class: {0}", ClassName(arg));
+                    return string.Format(Ru ? "Класс: {0} (синергии)" : "Class: {0} (synergies)", ClassName(arg));
                 case "blood":
                     return string.Format(Ru ? "Кровь: {0}" : "Blood: {0}", BloodName(arg));
                 case "weapon":

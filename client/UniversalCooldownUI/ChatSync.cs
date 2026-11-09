@@ -87,7 +87,12 @@ namespace UniversalCooldownUI
             if (_world == null) return;
             if (Time.time < _nextAuto) return;
 
-            _nextAuto = Time.time + 20f;
+            int seconds = 20;
+
+            try { seconds = Plugin.PollSeconds.Value; } catch { }
+            if (seconds <= 0) { _nextAuto = float.MaxValue; return; }
+
+            _nextAuto = Time.time + Mathf.Clamp(seconds, 5, 300);
             Request();
         }
 

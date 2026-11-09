@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 — live updates and a section header fix
+
+- The server now **pushes** the data to the client as soon as it changes (weapon swap, blood,
+  class, level), instead of waiting for the next client poll — the weapon section updates
+  immediately.
+- Fixed: the "General" section was rendered with its raw key (`general`) and an empty-state
+  row, because a two-field `S|general` line was mistaken for the legacy format.
+- The chat channel also carries the tooltip rates on every push.
 ## 1.1.0 — works for players on other machines
 
 - **Chat channel**: the client asks the server with `.ucui d` and receives the tab data in

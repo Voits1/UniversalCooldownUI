@@ -97,10 +97,43 @@ internal static class BuffsTabService
             File.WriteAllText(legacy, text, new UTF8Encoding(false));
 
             if (first) Core.Log.LogInfo($"[BuffsTab] first data for {steamId}");
+
+            // push straight to the client: remote clients cannot read this file, and waiting
+            // for the next poll made weapon/blood changes show up a minute late
+            PushToClient(player, text);
         }
         catch (Exception e)
         {
             Core.Log.LogWarning("[BuffsTab] write: " + e.Message);
+        }
+    }
+
+    const int ChunkSize = 200;
+    const string ChatPrefix = "UCUI";
+
+    /// <summary>Sends the payload to the client over chat (it hides these lines).</summary>
+    static void PushToClient(Entity player, string payload)
+    {
+        try
+        {
+            Entity userEntity = player.GetUserEntity();
+            if (!userEntity.Exists()) return;
+
+            string flat = payload.Replace('\n', '~');
+            int total = (flat.Length + ChunkSize - 1) / ChunkSize;
+            if (total <= 0) total = 1;
+
+            for (int i = 0; i < total; i++)
+            {
+                int length = Math.Min(ChunkSize, flat.Length - i * ChunkSize);
+                string part = length > 0 ? flat.Substring(i * ChunkSize, length) : string.Empty;
+
+                LocalizationService.SendToClient(player, userEntity, $"{ChatPrefix}|{i + 1}|{total}|{part}");
+            }
+        }
+        catch (Exception e)
+        {
+            Core.Log.LogWarning("[BuffsTab] push: " + e.Message);
         }
     }
 

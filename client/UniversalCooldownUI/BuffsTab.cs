@@ -783,17 +783,20 @@ namespace UniversalCooldownUI
                     {
                         current = new Section();
 
-                        if (parts.Length >= 2 && parts[1] == "meta")
+                        string kind = parts.Length >= 2 ? parts[1] : string.Empty;
+                        string arg = parts.Length >= 3 ? parts[2] : string.Empty;
+
+                        if (kind == "meta")
                         {
                             // service section: parsed, never displayed
                             current = null;
                             continue;
                         }
 
-                        if (parts.Length >= 3)
+                        if (IsKnownKind(kind))
                         {
-                            current.Kind = parts[1];
-                            current.Title = Localization.SectionTitle(parts[1], parts[2]);
+                            current.Kind = kind;
+                            current.Title = Localization.SectionTitle(kind, arg);
                         }
                         else if (parts.Length == 2)
                         {
@@ -829,6 +832,11 @@ namespace UniversalCooldownUI
             }
 
             return result;
+        }
+
+        static bool IsKnownKind(string kind)
+        {
+            return kind == "general" || kind == "class" || kind == "blood" || kind == "weapon";
         }
 
         static void ApplyRates(string[] parts)

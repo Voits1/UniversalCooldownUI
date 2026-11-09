@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.4 — no duplicate tabs, readable movement speed
+
+- Fixed duplicated "Blood" tabs: the game reports the same character window through a new
+  wrapper, which was treated as a new window on every call. The window is now recognised by its
+  native pointer, and any tab created earlier is destroyed and removed from the game arrays
+  before a rebuild, so duplicates cannot pile up (they used to squeeze the whole tab strip).
+- Movement speed is shown as a percentage (`+2,3%`) instead of a rounded `+0,0`.
 ## 1.1.3 — the tab survives a reconnect
 
 - Reconnecting to the server destroyed the character window, and the mod kept using the old

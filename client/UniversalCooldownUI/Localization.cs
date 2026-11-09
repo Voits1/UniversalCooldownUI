@@ -103,7 +103,6 @@ namespace UniversalCooldownUI
             switch (key)
             {
                 case "MaxHealth":
-                case "MovementSpeed":
                 case "PhysicalPower":
                 case "SpellPower":
                     return false;
@@ -119,10 +118,6 @@ namespace UniversalCooldownUI
                 return "+" + (value * 100f).ToString("0.#", NumberFormat) + "%";
             }
 
-            if (key == "MovementSpeed")
-            {
-                return "+" + value.ToString("0.0", NumberFormat);
-            }
 
             return "+" + value.ToString("0.#", NumberFormat);
         }

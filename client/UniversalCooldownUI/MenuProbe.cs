@@ -63,7 +63,7 @@ namespace UniversalCooldownUI
 
         static void OnInitializeUI(InventorySubMenu menu)
         {
-            bool changed = Menu != menu;
+            bool changed = Menu == null || menu == null || Menu.Pointer != menu.Pointer;
 
             if (Menu == null)
             {

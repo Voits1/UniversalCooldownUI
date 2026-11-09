@@ -78,6 +78,8 @@ namespace UniversalCooldownUI
         /// <summary>New character window (reconnect): drop every cached reference and rebuild.</summary>
         internal static void Rebind(InventorySubMenu menu)
         {
+            try { CleanupExisting(menu); } catch (Exception e) { Plugin.L.LogWarning("[BuffsTab] cleanup: " + e.Message); }
+
             ResetState();
             _remoteSections.Clear();
             _lastSections.Clear();
@@ -221,6 +223,9 @@ namespace UniversalCooldownUI
 
         static void TryBuild()
         {
+            // a duplicate can exist after a partial rebuild - always start from a clean strip
+            try { CleanupExisting(_menu); } catch { }
+
             var buttons = _menu.TabButtons;
             var tabs = _menu.Tabs;
             if (buttons == null || buttons.Length == 0 || tabs == null || tabs.Length == 0) return;
@@ -739,6 +744,107 @@ namespace UniversalCooldownUI
             }
         }
 
+        /// <summary>
+        /// Removes tab buttons / tab bodies we created earlier (duplicates left by a previous
+        /// build or by a reconnect) and shrinks the game arrays back to the vanilla entries.
+        /// </summary>
+        static void CleanupExisting(InventorySubMenu menu)
+        {
+            if (menu == null) return;
+
+            var buttons = menu.TabButtons;
+            var tabs = menu.Tabs;
+
+            // destroy our tab bodies
+            if (tabs != null)
+            {
+                for (int i = 0; i < tabs.Length; i++)
+                {
+                    var rect = tabs[i];
+                    if (rect == null || rect.gameObject == null) continue;
+                    if (rect.gameObject.name != "BloodTab") continue;
+
+                    rect.gameObject.SetActive(false);
+                    UnityEngine.Object.Destroy(rect.gameObject);
+                }
+            }
+
+            // destroy our buttons (by name, in the strip)
+            Transform strip = null;
+            if (buttons != null)
+            {
+                for (int i = 0; i < buttons.Length; i++)
+                {
+                    if (buttons[i] == null) continue;
+                    strip = buttons[i].transform.parent;
+                    break;
+                }
+            }
+
+            if (strip != null)
+            {
+                for (int i = strip.childCount - 1; i >= 0; i--)
+                {
+                    Transform child = strip.GetChild(i);
+                    if (child == null) continue;
+                    if (child.name != "BloodTabButton") continue;
+
+                    child.gameObject.SetActive(false);
+                    UnityEngine.Object.Destroy(child.gameObject);
+                }
+            }
+
+            // rebuild the arrays without our entries
+            menu.TabButtons = WithoutOurButtons(buttons);
+            menu.Tabs = WithoutOurTabs(tabs);
+        }
+
+        static Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<SimpleStunButton> WithoutOurButtons(
+            Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<SimpleStunButton> buttons)
+        {
+            if (buttons == null) return null;
+
+            int keep = 0;
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] != null && buttons[i].gameObject.name != "BloodTabButton") keep++;
+            }
+
+            var result = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<SimpleStunButton>(keep);
+            int index = 0;
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] == null || buttons[i].gameObject.name == "BloodTabButton") continue;
+                result[index++] = buttons[i];
+            }
+
+            return result;
+        }
+
+        static Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<RectTransform> WithoutOurTabs(
+            Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<RectTransform> tabs)
+        {
+            if (tabs == null) return null;
+
+            int keep = 0;
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                if (tabs[i] != null && tabs[i].gameObject.name != "BloodTab") keep++;
+            }
+
+            var result = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<RectTransform>(keep);
+            int index = 0;
+
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                if (tabs[i] == null || tabs[i].gameObject.name == "BloodTab") continue;
+                result[index++] = tabs[i];
+            }
+
+            return result;
+        }
+
         /// <summary>Data received from the server over chat.</summary>
         internal static void OnRemotePayload(string payload)
         {
@@ -1175,7 +1281,7 @@ namespace UniversalCooldownUI
                 }
 
                 ApplyLayout(nameText, 1f, -1f, 40f);
-                ApplyLayout(valueText, 0f, 78f, -1f);
+                ApplyLayout(valueText, 0f, 72f, -1f);
             }
             catch (Exception e)
             {
@@ -1242,6 +1348,8 @@ namespace UniversalCooldownUI
                 for (int i = 0; i < _content.childCount; i++)
                 {
                     Transform section = _content.GetChild(i);
+                    if (section == null || !section.gameObject.activeSelf) continue;
+
                     var rect = section.GetComponent<RectTransform>();
 
                     int rows = 0;

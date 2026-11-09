@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2 — updates without waiting
+
+- The client polls the server every 20 seconds (and every ~8 seconds while the tab is open),
+  so weapon/blood changes show up quickly even if a server push is missed.
+- The server logs every push (`[BuffsTab] pushed N chunk(s) to <steamId>`) to make delivery
+  easy to verify.
 ## 1.1.1 — live updates and a section header fix
 
 - The server now **pushes** the data to the client as soon as it changes (weapon swap, blood,

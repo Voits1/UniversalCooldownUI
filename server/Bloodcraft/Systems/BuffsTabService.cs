@@ -130,6 +130,8 @@ internal static class BuffsTabService
 
                 LocalizationService.SendToClient(player, userEntity, $"{ChatPrefix}|{i + 1}|{total}|{part}");
             }
+
+            Core.Log.LogInfo($"[BuffsTab] pushed {total} chunk(s) to {player.GetSteamId()}");
         }
         catch (Exception e)
         {

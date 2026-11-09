@@ -19,7 +19,7 @@ namespace UniversalCooldownUI
     {
         public const string PluginGuid = "universalcooldown.ui";
         public const string PluginName = "Universal Cooldown UI";
-        public const string PluginVersion = "1.1.1";
+        public const string PluginVersion = "1.1.2";
 
         internal static ManualLogSource L;
 

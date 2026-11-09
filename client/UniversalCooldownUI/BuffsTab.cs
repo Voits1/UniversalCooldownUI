@@ -165,7 +165,7 @@ namespace UniversalCooldownUI
                 Rebuild(ReadServerSections());
             }
 
-            if (_remoteSections.Count == 0) ChatSync.Request();
+            if (_remoteSections.Count == 0 || Time.time - _lastDataTime > 10f) ChatSync.Request();
         }
 
         static void EnforceTexts()

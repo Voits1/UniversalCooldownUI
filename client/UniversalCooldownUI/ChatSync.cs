@@ -73,7 +73,7 @@ namespace UniversalCooldownUI
             if (_world == null) return;
             if (Time.time < _nextAuto) return;
 
-            _nextAuto = Time.time + 120f;
+            _nextAuto = Time.time + 20f;
             Request();
         }
 
